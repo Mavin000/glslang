@@ -6839,10 +6839,17 @@ void TGlslangToSpvTraverser::makeFunctions(const glslang::TIntermSequence& glslF
         }
 
         spv::Block* functionBlock;
+
+        spv::FunctionControlMask controlMask = spv::FunctionControlMask::MaskNone;
+        if(glslFunction->getInlineState() == 1) {
+            controlMask = spv::FunctionControlMask::Inline;
+        } else if (glslFunction->getInlineState() == 2) {
+            controlMask = spv::FunctionControlMask::DontInline;
+        }
         spv::Function* function = builder.makeFunctionEntry(
             TranslatePrecisionDecoration(glslFunction->getType()), convertGlslangToSpvType(glslFunction->getType()),
             glslFunction->getName().c_str(), convertGlslangLinkageToSpv(glslFunction->getLinkType()), paramTypes,
-            paramDecorations, &functionBlock);
+            paramDecorations, &functionBlock, controlMask);
         builder.setupFunctionDebugInfo(function, glslFunction->getName().c_str(), paramTypes, paramNames);
         if (implicitThis)
             function->setImplicitThis();

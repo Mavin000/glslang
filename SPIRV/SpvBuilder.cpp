@@ -2610,13 +2610,13 @@ Function* Builder::makeEntryPoint(const char* entryPoint)
 // Comments in header
 Function* Builder::makeFunctionEntry(Decoration precision, Id returnType, const char* name, LinkageType linkType,
                                      const std::vector<Id>& paramTypes,
-                                     const std::vector<std::vector<Decoration>>& decorations, Block** entry)
+                                     const std::vector<std::vector<Decoration>>& decorations, Block** entry, spv::FunctionControlMask controlMask)
 {
     // Make the function and initial instructions in it
     Id typeId = makeFunctionType(returnType, paramTypes);
     Id firstParamId = paramTypes.size() == 0 ? 0 : getUniqueIds((int)paramTypes.size());
     Id funcId = getUniqueId();
-    Function* function = new Function(funcId, returnType, typeId, firstParamId, linkType, name, module);
+    Function* function = new Function(funcId, returnType, typeId, firstParamId, linkType, name, module, controlMask);
 
     // Set up the precisions
     setPrecision(function->getId(), precision);

@@ -445,7 +445,7 @@ void inReadableOrder(Block* root, std::function<void(Block*, ReachReason, Block*
 
 class Function {
 public:
-    Function(Id id, Id resultType, Id functionType, Id firstParam, LinkageType linkage, const std::string& name, Module& parent);
+    Function(Id id, Id resultType, Id functionType, Id firstParam, LinkageType linkage, const std::string& name, Module& parent, spv::FunctionControlMask controlMask);
     virtual ~Function()
     {
         for (int i = 0; i < (int)parameterInstructions.size(); ++i)
@@ -603,7 +603,7 @@ protected:
 // Add both
 // - the OpFunction instruction
 // - all the OpFunctionParameter instructions
-__inline Function::Function(Id id, Id resultType, Id functionType, Id firstParamId, LinkageType linkage, const std::string& name, Module& parent)
+__inline Function::Function(Id id, Id resultType, Id functionType, Id firstParamId, LinkageType linkage, const std::string& name, Module& parent, spv::FunctionControlMask controlMask)
     : parent(parent), lineInstruction(nullptr),
       functionInstruction(id, resultType, Op::OpFunction), implicitThis(false),
       reducedPrecisionReturn(false),
@@ -611,7 +611,7 @@ __inline Function::Function(Id id, Id resultType, Id functionType, Id firstParam
 {
     // OpFunction
     functionInstruction.reserveOperands(2);
-    functionInstruction.addImmediateOperand(FunctionControlMask::MaskNone);
+    functionInstruction.addImmediateOperand(controlMask);
     functionInstruction.addIdOperand(functionType);
     parent.mapInstruction(&functionInstruction);
     parent.addFunction(this);

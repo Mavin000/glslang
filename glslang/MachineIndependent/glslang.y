@@ -291,6 +291,9 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> NOPERSPECTIVE EXPLICITINTERPAMD PERVERTEXEXT PERVERTEXNV PERPRIMITIVENV PERVIEWNV PERTASKNV PERPRIMITIVEEXT TASKPAYLOADWORKGROUPEXT
 %token <lex> PRECISE
 
+%token <lex> INLINE
+%token <lex> NOINLINE
+
 %type <interm> assignment_operator unary_operator
 %type <interm.intermTypedNode> variable_identifier primary_expression postfix_expression
 %type <interm.intermTypedNode> expression integer_expression assignment_expression
@@ -4345,6 +4348,88 @@ function_definition
         $$->getAsAggregate()->setLinkType($1.function->getLinkType());
         parseContext.intermediate.setAggregateOperator($$, EOpFunction, $1.function->getType(), $1.loc);
         $$->getAsAggregate()->setName($1.function->getMangledName().c_str());
+
+        // store the pragma information for debug and optimize and other vendor specific
+        // information. This information can be queried from the parse tree
+        $$->getAsAggregate()->setOptimize(parseContext.contextPragma.optimize);
+        $$->getAsAggregate()->setDebug(parseContext.contextPragma.debug);
+        $$->getAsAggregate()->setPragmaTable(parseContext.contextPragma.pragmaTable);
+
+        // Set currentFunctionType to empty pointer when goes outside of the function
+        parseContext.currentFunctionType = nullptr;
+
+        // For ES 100 only, according to ES shading language 100 spec: A function
+        // body has a scope nested inside the function's definition.
+        if (parseContext.profile == EEsProfile && parseContext.version == 100)
+        {
+            parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
+            --parseContext.statementNestingLevel;
+        }
+    }
+
+    | INLINE function_prototype {
+        $2.function = parseContext.handleFunctionDeclarator($2.loc, *$2.function, false /* not prototype */);
+        $2.intermNode = parseContext.handleFunctionDefinition($2.loc, *$2.function);
+
+        // For ES 100 only, according to ES shading language 100 spec: A function
+        // body has a scope nested inside the function's definition.
+        if (parseContext.profile == EEsProfile && parseContext.version == 100)
+        {
+            parseContext.symbolTable.push();
+            ++parseContext.statementNestingLevel;
+        }
+    }
+    compound_statement_no_new_scope {
+        //   May be best done as post process phase on intermediate code
+        if (parseContext.currentFunctionType->getBasicType() != EbtVoid && ! parseContext.functionReturnsValue)
+            parseContext.error($2.loc, "function does not return a value:", "", $2.function->getName().c_str());
+        parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
+        $$ = parseContext.intermediate.growAggregate($2.intermNode, $4);
+        $$->getAsAggregate()->setLinkType($2.function->getLinkType());
+        $$->getAsAggregate()->setInlineState(1);
+        parseContext.intermediate.setAggregateOperator($$, EOpFunction, $2.function->getType(), $2.loc);
+        $$->getAsAggregate()->setName($2.function->getMangledName().c_str());
+
+        // store the pragma information for debug and optimize and other vendor specific
+        // information. This information can be queried from the parse tree
+        $$->getAsAggregate()->setOptimize(parseContext.contextPragma.optimize);
+        $$->getAsAggregate()->setDebug(parseContext.contextPragma.debug);
+        $$->getAsAggregate()->setPragmaTable(parseContext.contextPragma.pragmaTable);
+
+        // Set currentFunctionType to empty pointer when goes outside of the function
+        parseContext.currentFunctionType = nullptr;
+
+        // For ES 100 only, according to ES shading language 100 spec: A function
+        // body has a scope nested inside the function's definition.
+        if (parseContext.profile == EEsProfile && parseContext.version == 100)
+        {
+            parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
+            --parseContext.statementNestingLevel;
+        }
+    }
+
+    | NOINLINE function_prototype {
+        $2.function = parseContext.handleFunctionDeclarator($2.loc, *$2.function, false /* not prototype */);
+        $2.intermNode = parseContext.handleFunctionDefinition($2.loc, *$2.function);
+
+        // For ES 100 only, according to ES shading language 100 spec: A function
+        // body has a scope nested inside the function's definition.
+        if (parseContext.profile == EEsProfile && parseContext.version == 100)
+        {
+            parseContext.symbolTable.push();
+            ++parseContext.statementNestingLevel;
+        }
+    }
+    compound_statement_no_new_scope {
+        //   May be best done as post process phase on intermediate code
+        if (parseContext.currentFunctionType->getBasicType() != EbtVoid && ! parseContext.functionReturnsValue)
+            parseContext.error($2.loc, "function does not return a value:", "", $2.function->getName().c_str());
+        parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
+        $$ = parseContext.intermediate.growAggregate($2.intermNode, $4);
+        $$->getAsAggregate()->setLinkType($2.function->getLinkType());
+        $$->getAsAggregate()->setInlineState(2);
+        parseContext.intermediate.setAggregateOperator($$, EOpFunction, $2.function->getType(), $2.loc);
+        $$->getAsAggregate()->setName($2.function->getMangledName().c_str());
 
         // store the pragma information for debug and optimize and other vendor specific
         // information. This information can be queried from the parse tree
