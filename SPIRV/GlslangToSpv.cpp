@@ -6841,9 +6841,9 @@ void TGlslangToSpvTraverser::makeFunctions(const glslang::TIntermSequence& glslF
         spv::Block* functionBlock;
 
         spv::FunctionControlMask controlMask = spv::FunctionControlMask::MaskNone;
-        if(glslFunction->getInlineState() == 1) {
+        if(glslFunction->getInlineState() == glslang::TInlineState::EInlineForce) {
             controlMask = spv::FunctionControlMask::Inline;
-        } else if (glslFunction->getInlineState() == 2) {
+        } else if (glslFunction->getInlineState() == glslang::TInlineState::ENoInline) {
             controlMask = spv::FunctionControlMask::DontInline;
         }
         spv::Function* function = builder.makeFunctionEntry(

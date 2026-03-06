@@ -1677,6 +1677,8 @@ protected:
     TSpirvInstruction spirvInst;
 };
 
+enum TInlineState { EInlineDefault, EInlineForce, ENoInline };
+
 typedef TVector<TIntermNode*> TIntermSequence;
 typedef TVector<TStorageQualifier> TQualifierList;
 //
@@ -1719,8 +1721,8 @@ public:
     void setLinkType(TLinkType l) { linkType = l; }
     TLinkType getLinkType() const { return linkType; }
 
-    void setInlineState( int i) {inlineState = i; }
-    int getInlineState() const { return inlineState; }
+    void setInlineState( TInlineState state) {inlineState = state; }
+    TInlineState getInlineState() const { return inlineState; }
 protected:
     TIntermAggregate(const TIntermAggregate&); // disallow copy constructor
     TIntermAggregate& operator=(const TIntermAggregate&); // disallow assignment operator
@@ -1733,7 +1735,7 @@ protected:
     TPragmaTable* pragmaTable;
     TSpirvInstruction spirvInst;
     TLinkType linkType = ELinkNone;
-    int inlineState = 0;
+    TInlineState inlineState = EInlineDefault;
 
     // Marking the end source location of the aggregate.
     // This is currently only set for a compound statement or a function body, pointing to '}'.

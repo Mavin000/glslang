@@ -4386,7 +4386,7 @@ function_definition
         parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
         $$ = parseContext.intermediate.growAggregate($2.intermNode, $4);
         $$->getAsAggregate()->setLinkType($2.function->getLinkType());
-        $$->getAsAggregate()->setInlineState(1);
+        $$->getAsAggregate()->setInlineState(EInlineForce);
         parseContext.intermediate.setAggregateOperator($$, EOpFunction, $2.function->getType(), $2.loc);
         $$->getAsAggregate()->setName($2.function->getMangledName().c_str());
 
@@ -4427,7 +4427,7 @@ function_definition
         parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
         $$ = parseContext.intermediate.growAggregate($2.intermNode, $4);
         $$->getAsAggregate()->setLinkType($2.function->getLinkType());
-        $$->getAsAggregate()->setInlineState(2);
+        $$->getAsAggregate()->setInlineState(ENoInline);
         parseContext.intermediate.setAggregateOperator($$, EOpFunction, $2.function->getType(), $2.loc);
         $$->getAsAggregate()->setName($2.function->getMangledName().c_str());
 
